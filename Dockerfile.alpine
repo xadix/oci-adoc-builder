@@ -1,0 +1,177 @@
+# syntax = docker/dockerfile:experimental
+# https://docs.docker.com/engine/reference/builder/
+# https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/experimental.md
+ARG os_name=alpine
+ARG os_version=3.10
+ARG base_image_registry=docker.io
+ARG base_image_name=${os_name}
+ARG base_image_tag=${os_version}
+FROM ${base_image_registry}/${base_image_name}:${base_image_tag}
+
+# https://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management
+# https://wiki.alpinelinux.org/wiki/Local_APK_cache
+
+################################################################################
+## Setup caching
+################################################################################
+
+ARG cache_clean=true
+ARG cache_enabled=false
+
+RUN \
+    echo "cache_clean=${cache_clean} cache_enabled=${cache_enabled}" && \
+    if ${cache_enabled}; then \
+        mkdir -vp /var/cache/apk && \
+        ln -vfs /var/cache/apk /etc/apk/cache && \
+        true; \
+    else \
+        echo "Not enabling cache for apk" && \
+        true; \
+    fi && \
+    true
+
+################################################################################
+## Install fonts
+################################################################################
+
+RUN \
+    apk add \
+        msttcorefonts-installer \
+        font-noto \
+        font-noto-extra \
+    && \
+    update-ms-fonts && \
+    fc-cache -f && \
+    true
+
+
+################################################################################
+## Install basics
+################################################################################
+
+# https://pkgs.alpinelinux.org/packages?name=*jdk*&branch=v3.10&arch=x86_64
+
+RUN \
+    apk add \
+        bash \
+        make \
+        wget \
+        curl \
+        git \
+    && \
+    { "${cache_clean}" && apk -v cache clean; true; } && \
+    true
+
+################################################################################
+## Install ruby + gems
+################################################################################
+
+RUN \
+    apk add \
+        ruby \
+    && \
+    gem install --no-document \
+        asciidoctor \
+        asciidoctor-diagram \
+        coderay \
+        pygments.rb \
+        tilt \
+        haml \
+    && \
+    gem install --no-document --pre \
+        asciidoctor-pdf \
+    && \
+    true
+
+################################################################################
+## Install python + pypis
+################################################################################
+
+RUN \
+    apk add \
+        python3 \
+        python3-dev \
+        zlib-dev \
+        jpeg-dev \
+        build-base \
+    && \
+    pip3 install --cache-dir=/var/cache/python3-pip/ \
+        blockdiag \
+        syntrax \
+    && \
+    true
+
+################################################################################
+## Install java + plantuml
+################################################################################
+
+RUN \
+    apk add \
+        wget \
+        openjdk11-jre-headless \
+        graphviz \
+    && \
+    { "${cache_clean}" && apk -v cache clean; true; } && \
+    plantuml_version=1.2018.3 && \
+    plantuml_jar_basename=plantuml.${plantuml_version}.jar && \
+    plantuml_url=http://sourceforge.net/projects/plantuml/files/${plantuml_jar_basename}/download && \
+    { test -e "/var/cache/${plantuml_jar_basename}" || wget -c -O /var/cache/${plantuml_jar_basename} ${plantuml_url}; } && \
+    cp /var/cache/${plantuml_jar_basename} /usr/local/share/plantuml.jar && \
+    printf '#!/usr/bin/env bash\nexec java -jar /usr/local/share/plantuml.jar "${@}"\n' > /usr/local/bin/plantuml && \
+    chmod ugo+x /usr/local/bin/plantuml && \
+    plantuml -version && \
+    true
+
+################################################################################
+## Install node + npms
+################################################################################
+
+# https://nodejs.org/dist/v10.16.0/node-v10.16.0-linux-x64.tar.xz
+
+RUN \
+    apk add \
+        nodejs \
+        npm \
+    && \
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install -g \
+        mermaid.cli \
+        vega \
+        vega-lite \
+    && \
+    true
+
+################################################################################
+## sudo
+################################################################################
+
+#RUN \
+#    apk add \
+#        sudo \
+#    && \
+#    echo "%wheel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/00-preferences && \
+#    true
+
+################################################################################
+## Setup Use
+################################################################################
+
+ARG dirname=adoc_builder
+ARG group_name=adoc_builder
+ARG group_id=11215
+ARG user_name=adoc_builder
+ARG user_id=11215
+
+# https://busybox.net/downloads/BusyBox.html#addgroup
+# https://busybox.net/downloads/BusyBox.html#adduser
+
+RUN \
+    addgroup -g ${group_id} ${group_name} && \
+    adduser -H -h /var/opt/${dirname} -s /bin/sh -G ${group_name} -D -u ${user_id} ${user_name} && \
+    addgroup ${user_name} users && \
+    addgroup ${user_name} wheel && \
+    mkdir -p /var/opt/${dirname} /opt/${dirname} && \
+    chown -R ${user_name}:${group_name} /var/opt/${dirname} /opt/${dirname} && \
+    id ${user_name} && \
+    true
+
+USER ${user_name}:${group_name}

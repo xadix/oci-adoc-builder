@@ -9,14 +9,14 @@ cache_clean=false
 cache_enabled=true
 
 os_name=alpine
-os_version=3.9
+os_version=3.10
 
 git_changes=$(shell [[ -z $$(git status -s) ]] && echo "s" || echo "m")
 git_commits_hash=$(shell git rev-list HEAD | md5sum | cut -c 1-4)
 git_commits=$(shell git rev-list --count HEAD)
 git_suffix=$(git_commits)$(git_changes)-$(git_commits_hash)
 
-dockerfile=Dockerfile
+dockerfile=Dockerfile.$(os_name)
 ocimage_registry=docker.io
 ocimage_name=iwana/adoc-builder
 ocimage_tag=$(git_suffix)
@@ -77,13 +77,16 @@ container_run_args= \
 	--volume /etc/localtime:/etc/localtime:ro \
 	--volume cache-$(os_name)-$(os_version)-var-cache:/var/cache \
 	--name $(container_name_prefix)$(@) \
-	--env-file $(container_run_env_file) \
 
 run-ocimage: build-ocimage
-	docker container run $(container_run_args) $(lastword $(ocimage_tags_staging))
+	docker container run $(container_run_args) -it $(lastword $(ocimage_tags_staging))
 
 run-ocimage-shell: build-ocimage
 	docker container run $(container_run_args) -it $(lastword $(ocimage_tags_staging)) busybox sh
 
 run-ocimage-shell-root: build-ocimage
 	docker container run $(container_run_args) -it --user root:root --privileged $(lastword $(ocimage_tags_staging)) busybox sh
+
+################################################################################
+# ...
+################################################################################
