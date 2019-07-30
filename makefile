@@ -2,6 +2,13 @@
 # variables
 ################################################################################
 
+define newline
+
+
+endef
+
+dumpvars=$(info vars:$(foreach var,$(1),$(newline) $(var)=$($(var))))
+
 build_dir=build
 context_dir=context
 
@@ -15,10 +22,11 @@ git_changes=$(shell [[ -z $$(git status -s) ]] && echo "s" || echo "m")
 git_commits_hash=$(shell git rev-list HEAD | md5sum | cut -c 1-4)
 git_commits=$(shell git rev-list --count HEAD)
 git_suffix=$(git_commits)$(git_changes)-$(git_commits_hash)
+$(call dumpvars,git_changes git_commits_hash git_commits git_suffix)
 
 dockerfile=Dockerfile.$(os_name)
 ocimage_registry=docker.io
-ocimage_name=iwana/adoc-builder
+ocimage_name=xadix/adoc-builder
 ocimage_tag=$(git_suffix)
 
 container_name_prefix=oci-adoc_builder-
@@ -41,11 +49,6 @@ dockerfile_translate=sed -E 's|^\s*RUN\s+|RUN --mount=type=cache,id=$(os_name)-$
 ################################################################################
 
 .PHONY: ALWAYS
-
-define newline
-
-
-endef
 
 $(build_dir)/:
 	mkdir $(@)
