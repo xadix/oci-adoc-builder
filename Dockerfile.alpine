@@ -99,6 +99,7 @@ RUN \
     gem install --no-document \
         asciidoctor \
         asciidoctor-diagram \
+        asciidoctor-html5s \
         coderay \
         pygments.rb \
         tilt \
