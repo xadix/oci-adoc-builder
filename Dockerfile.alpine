@@ -151,15 +151,29 @@ RUN \
     true
 
 ################################################################################
+## Install hugo
+################################################################################
+
+RUN \
+    hugo_version=0.56.3 && \
+    hugo_archive=hugo_${hugo_version}_Linux-64bit.tar.gz && \
+    hugo_archive_url=https://github.com/gohugoio/hugo/releases/download/v${hugo_version}/${hugo_archive} && \
+    hugo_archive_path=/var/cache/${hugo_archive} && \
+    { test -e "${hugo_archive_path}" || wget -c -O ${hugo_archive_path} ${hugo_archive_url}; } && \
+    tar -zxvf ${hugo_archive_path} hugo -C /usr/local/bin/ && \
+    hugo version && \
+    true
+
+################################################################################
 ## sudo
 ################################################################################
 
-#RUN \
-#    apk add \
-#        sudo \
-#    && \
-#    echo "%wheel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/00-preferences && \
-#    true
+RUN \
+    apk add \
+        sudo \
+    && \
+    echo "%wheel ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/00-preferences && \
+    true
 
 ################################################################################
 ## Setup Use
