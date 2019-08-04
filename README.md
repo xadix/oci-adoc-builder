@@ -22,4 +22,6 @@ git show-ref
 https://hub.docker.com/r/xadix/adoc-builder
 
 https://cloud.docker.com/u/xadix/repository/docker/xadix/adoc-builder/general
+https://cloud.docker.com/u/xadix/repository/docker/xadix/adoc-builder/builds
+https://cloud.docker.com/u/xadix/repository/docker/xadix/adoc-builder/timeline
 ```
