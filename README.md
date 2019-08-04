@@ -15,6 +15,7 @@ make run-ocimage-shell-root container_run_args+=" --volume=${HOME}/d/gitlab.com/
 ```bash
 git tag v$(date +%Y%m%d%H%M%S)
 git push --all
+git push --tags
 git show-ref
 ```
 

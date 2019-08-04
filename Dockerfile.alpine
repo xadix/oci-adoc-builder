@@ -105,6 +105,7 @@ RUN \
         tilt \
         haml \
         json \
+        nanoc \
     && \
     gem install --no-document --pre \
         asciidoctor-pdf \
@@ -154,15 +155,15 @@ RUN \
 ## Install hugo
 ################################################################################
 
-RUN \
-    hugo_version=0.56.3 && \
-    hugo_archive=hugo_${hugo_version}_Linux-64bit.tar.gz && \
-    hugo_archive_url=https://github.com/gohugoio/hugo/releases/download/v${hugo_version}/${hugo_archive} && \
-    hugo_archive_path=/var/cache/${hugo_archive} && \
-    { test -e "${hugo_archive_path}" || wget -c -O ${hugo_archive_path} ${hugo_archive_url}; } && \
-    tar -zxvf ${hugo_archive_path} hugo -C /usr/local/bin/ && \
-    hugo version && \
-    true
+# RUN \
+#     hugo_version=0.56.3 && \
+#     hugo_archive=hugo_${hugo_version}_Linux-64bit.tar.gz && \
+#     hugo_archive_url=https://github.com/gohugoio/hugo/releases/download/v${hugo_version}/${hugo_archive} && \
+#     hugo_archive_path=/var/cache/${hugo_archive} && \
+#     { test -e "${hugo_archive_path}" || wget -c -O ${hugo_archive_path} ${hugo_archive_url}; } && \
+#     tar -zxvf ${hugo_archive_path} hugo -C /usr/local/bin/ && \
+#     hugo version && \
+#     true
 
 ################################################################################
 ## sudo
